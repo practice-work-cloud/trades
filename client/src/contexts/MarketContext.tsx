@@ -10,10 +10,12 @@ interface MarketContextType {
   orders: Order[];
   lastUpdated: Date | null;
   isConnected: boolean;
+  isSimulationRunning: boolean;
   refreshData: () => void;
   tradingRules: TradingRule | null;
   setTradingRules: (rules: TradingRule) => void;
   runSimulation: () => void;
+  stopSimulation: () => void;
   resetSimulation: () => void;
 }
 

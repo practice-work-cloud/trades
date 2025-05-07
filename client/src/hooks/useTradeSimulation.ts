@@ -1,10 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { OrderType, OrderStatus, TradingRule, Order } from '@/types/order';
 import { PricePoint } from '@/types/market';
 import { getRandomNumber, sleep } from '@/lib/utils';
 
 export function useTradeSimulation() {
   const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+  const stopSimulationRef = useRef(false);
+  
+  // Function to stop any running simulation
+  const stopSimulation = useCallback(() => {
+    if (isSimulationRunning) {
+      stopSimulationRef.current = true;
+    }
+  }, [isSimulationRunning]);
   
   // Function to generate random market data and execute trades based on rules
   const generatePriceData = useCallback(async (
@@ -16,6 +24,7 @@ export function useTradeSimulation() {
     onOrderExecution: (order: Order) => void
   ) => {
     setIsSimulationRunning(true);
+    stopSimulationRef.current = false;
     
     const basePrice = initialPrice;
     const dataPoints = 100; // Increased data points for more realistic simulation
@@ -28,6 +37,11 @@ export function useTradeSimulation() {
     let currentPrice = basePrice;
     
     for (let i = 0; i < dataPoints; i++) {
+      // Check if simulation should stop
+      if (stopSimulationRef.current) {
+        break;
+      }
+      
       // Generate price movements with different patterns to demonstrate various scenarios
       if (i < 20) {
         // Small fluctuations around base price
@@ -94,12 +108,18 @@ export function useTradeSimulation() {
           quantity: 1,
           status: OrderStatus.COMPLETED,
           trigger: 'Target Price',
+          profit: null
         };
         
         onOrderExecution(buyOrder);
         
         // Add a small delay to make the order execution more visible
         await sleep(400);
+        
+        // Check if simulation should stop after this order
+        if (stopSimulationRef.current) {
+          break;
+        }
       }
       
       // Check if we need to trigger a sell order after a buy
@@ -107,6 +127,9 @@ export function useTradeSimulation() {
         // Condition 1: Take profit is triggered
         if (takeProfitPrice > targetPrice && currentPrice >= takeProfitPrice) {
           sellExecuted = true;
+          
+          // Calculate profit from buy price (approximate)
+          const profit = currentPrice - targetPrice;
           
           const sellOrder: Order = {
             id: Date.now().toString(),
@@ -117,14 +140,23 @@ export function useTradeSimulation() {
             quantity: 1,
             status: OrderStatus.COMPLETED,
             trigger: 'Take Profit',
+            profit: profit
           };
           
           onOrderExecution(sellOrder);
           await sleep(400);
+          
+          // Check if simulation should stop after this order
+          if (stopSimulationRef.current) {
+            break;
+          }
         } 
         // Condition 2: Stop loss is triggered
         else if (stopLossPrice < targetPrice && currentPrice <= stopLossPrice) {
           sellExecuted = true;
+          
+          // Calculate loss from buy price (approximate)
+          const loss = currentPrice - targetPrice;
           
           const sellOrder: Order = {
             id: Date.now().toString(),
@@ -135,10 +167,16 @@ export function useTradeSimulation() {
             quantity: 1,
             status: OrderStatus.COMPLETED,
             trigger: 'Stop Loss',
+            profit: loss
           };
           
           onOrderExecution(sellOrder);
           await sleep(400);
+          
+          // Check if simulation should stop after this order
+          if (stopSimulationRef.current) {
+            break;
+          }
         }
       }
       
@@ -166,16 +204,28 @@ export function useTradeSimulation() {
           quantity: 1,
           status: OrderStatus.COMPLETED,
           trigger: 'Market Momentum',
+          profit: null
         };
         
         onOrderExecution(buyOrder);
         await sleep(400);
+        
+        // Check if simulation should stop after this order
+        if (stopSimulationRef.current) {
+          break;
+        }
       }
       
       // Add a delay between price updates for more realistic visualization
       await sleep(80);
+      
+      // Check if simulation should stop after this update
+      if (stopSimulationRef.current) {
+        break;
+      }
     }
     
+    stopSimulationRef.current = false;
     setIsSimulationRunning(false);
   }, []);
   
@@ -187,6 +237,7 @@ export function useTradeSimulation() {
     onOrderExecution: (order: Order) => void
   ) => {
     setIsSimulationRunning(true);
+    stopSimulationRef.current = false;
     
     // Define a set of different scenarios to demonstrate
     const scenarios = [
@@ -211,7 +262,14 @@ export function useTradeSimulation() {
     ];
     
     // Execute each scenario in sequence
-    for (const scenario of scenarios) {
+    for (let i = 0; i < scenarios.length; i++) {
+      // Check if simulation should stop before starting next scenario
+      if (stopSimulationRef.current) {
+        break;
+      }
+      
+      const scenario = scenarios[i];
+      
       await generatePriceData(
         initialPrice,
         scenario.targetPrice,
@@ -221,16 +279,28 @@ export function useTradeSimulation() {
         onOrderExecution
       );
       
-      // Add a brief pause between scenarios
-      await sleep(1000);
+      // Check if simulation should stop after this scenario
+      if (stopSimulationRef.current) {
+        break;
+      }
+      
+      // Add a brief pause between scenarios if not the last one
+      if (i < scenarios.length - 1) {
+        await sleep(1000);
+      }
     }
     
+    stopSimulationRef.current = false;
     setIsSimulationRunning(false);
+    
+    // Return a resolved promise to indicate completion
+    return Promise.resolve();
   }, [generatePriceData]);
   
   return {
     isSimulationRunning,
     generatePriceData,
-    autoSimulate
+    autoSimulate,
+    stopSimulation
   };
 }

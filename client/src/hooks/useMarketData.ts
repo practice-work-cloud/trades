@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTradeSimulation } from './useTradeSimulation';
 import { MarketData, PricePoint } from '@/types/market';
 import { Order, TradingRule } from '@/types/order';
@@ -22,11 +22,14 @@ export function useMarketData() {
   // For pure static version, we simulate connection state
   const [isConnected] = useState(true);
   
-  const { isSimulationRunning, autoSimulate } = useTradeSimulation();
+  const { isSimulationRunning, autoSimulate, stopSimulation: stopTradeSimulation } = useTradeSimulation();
+  
+  // Ref to track if we need to stop data updates during simulation
+  const simulationRunningRef = useRef(false);
   
   // Generate a new price point
   const refreshData = useCallback(() => {
-    if (!marketData) return;
+    if (!marketData || simulationRunningRef.current) return;
     
     // Generate a new price based on the current price
     const newPrice = generateNextPrice(marketData.ltp);
@@ -56,7 +59,9 @@ export function useMarketData() {
   // Simulate periodic data updates for a dynamic feel
   useEffect(() => {
     const interval = setInterval(() => {
-      refreshData();
+      if (!simulationRunningRef.current) {
+        refreshData();
+      }
     }, 5000); // Update every 5 seconds
     
     return () => clearInterval(interval);
@@ -93,6 +98,9 @@ export function useMarketData() {
   const runSimulation = useCallback(() => {
     if (!marketData || !tradingRules || isSimulationRunning) return;
     
+    // Set simulation running flag
+    simulationRunningRef.current = true;
+    
     // Reset price history and trade executions first
     setPriceHistory([{
       timestamp: new Date().toISOString(),
@@ -106,7 +114,10 @@ export function useMarketData() {
       tradingRules,
       handlePriceUpdate,
       handleOrderExecution
-    );
+    ).then(() => {
+      // When simulation is complete, allow regular updates again
+      simulationRunningRef.current = false;
+    });
   }, [
     marketData, 
     tradingRules, 
@@ -116,13 +127,37 @@ export function useMarketData() {
     handleOrderExecution
   ]);
   
-  // Reset simulation to initial state
-  const resetSimulation = useCallback(() => {
-    if (!marketData) return;
+  // Stop the current simulation
+  const stopSimulation = useCallback(() => {
+    if (!isSimulationRunning) return;
     
+    // Stop the simulation in the trade simulation hook
+    stopTradeSimulation();
+    
+    // Reset the flag
+    simulationRunningRef.current = false;
+  }, [isSimulationRunning, stopTradeSimulation]);
+  
+  // Reset simulation to initial state (reset all data to defaults)
+  const resetSimulation = useCallback(() => {
+    // If a simulation is running, stop it first
+    if (isSimulationRunning) {
+      stopTradeSimulation();
+    }
+    
+    // Reset all data to default state
+    simulationRunningRef.current = false;
+    setMarketData(staticMarketData);
     setPriceHistory(staticPriceHistory);
     setTradeExecutions([]);
-  }, [marketData]);
+    setOrders(staticOrders);
+    
+    // Reset trading rules to defaults
+    setTradingRules(staticTradingRule);
+    
+    // Set last updated to now
+    setLastUpdated(new Date());
+  }, [isSimulationRunning, stopTradeSimulation]);
   
   return {
     marketData,
@@ -131,10 +166,12 @@ export function useMarketData() {
     orders,
     lastUpdated,
     isConnected,
+    isSimulationRunning,
     refreshData,
     tradingRules,
     setTradingRules,
     runSimulation,
+    stopSimulation,
     resetSimulation,
   };
 }

@@ -18,6 +18,7 @@ export interface Order {
   quantity: number;
   status: OrderStatus;
   trigger: string;
+  profit: number | null; // Profit/loss amount for SELL orders, null for BUY orders
 }
 
 export interface TradingRule {

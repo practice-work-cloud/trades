@@ -11,7 +11,7 @@ export default function PriceChart() {
   const chartInstance = useRef<Chart | null>(null);
   const { priceHistory, tradeExecutions } = useMarketContext();
   const [timeframe, setTimeframe] = useState<string>('1D');
-  const [chartType, setChartType] = useState<string>('line');
+  const [chartType, setChartType] = useState<string>('area');
 
   const createChart = () => {
     if (!chartRef.current) return;
@@ -57,26 +57,32 @@ export default function PriceChart() {
       sellData[point.index] = point.price;
     });
 
+    // More visually distinct colors
+    const priceLineColor = '#4F46E5'; // Indigo-600
+    const priceAreaColor = 'rgba(79, 70, 229, 0.2)'; // Indigo with transparency
+    const buyPointColor = '#16A34A'; // Green-600
+    const sellPointColor = '#DC2626'; // Red-600
+
     chartInstance.current = new Chart(ctx, {
-      type: chartType === 'candle' ? 'bar' : chartType === 'area' ? 'line' : 'line',
+      type: chartType === 'candle' ? 'bar' : 'line',
       data: {
         labels: times,
         datasets: [
           {
             label: 'Nifty 50 Price',
             data: prices,
-            borderColor: 'hsl(var(--primary))',
-            backgroundColor: chartType === 'area' ? 'rgba(33, 150, 243, 0.1)' : 'transparent',
-            borderWidth: 2,
+            borderColor: priceLineColor,
+            backgroundColor: chartType === 'area' ? priceAreaColor : 'transparent',
+            borderWidth: 2.5,
             pointRadius: 0,
             pointHoverRadius: 6,
             fill: chartType === 'area',
-            tension: 0.2
+            tension: 0.3
           },
           {
             label: 'Buy Points',
             data: buyData,
-            backgroundColor: 'hsl(var(--secondary))',
+            backgroundColor: buyPointColor,
             borderColor: 'white',
             borderWidth: 2,
             pointRadius: 6,
@@ -86,7 +92,7 @@ export default function PriceChart() {
           {
             label: 'Sell Points',
             data: sellData,
-            backgroundColor: 'hsl(var(--destructive))',
+            backgroundColor: sellPointColor,
             borderColor: 'white',
             borderWidth: 2,
             pointRadius: 6,
@@ -103,25 +109,38 @@ export default function PriceChart() {
             display: false
           },
           tooltip: {
-            backgroundColor: 'hsl(var(--card))',
-            titleColor: 'hsl(var(--foreground))',
-            bodyColor: 'hsl(var(--muted-foreground))',
+            backgroundColor: '#1E293B', // Slate-800 for better contrast
+            titleColor: '#FFFFFF',
+            bodyColor: '#CBD5E1', // Slate-300
             titleFont: {
               family: 'Roboto',
-              size: 14
+              size: 14,
+              weight: 'bold'
             },
             bodyFont: {
               family: 'Roboto Mono',
-              size: 12
+              size: 13
             },
             padding: 12,
             displayColors: false,
+            borderColor: '#475569', // Slate-600
+            borderWidth: 1,
             callbacks: {
               title: function(tooltipItems) {
                 return tooltipItems[0].label;
               },
               label: function(context) {
-                return formatCurrency(context.raw as number);
+                const dataset = context.dataset;
+                const value = context.raw as number;
+                
+                // Different labels based on dataset
+                if (dataset.label === 'Buy Points') {
+                  return `Buy: ${formatCurrency(value)}`;
+                } else if (dataset.label === 'Sell Points') {
+                  return `Sell: ${formatCurrency(value)}`;
+                } else {
+                  return `Price: ${formatCurrency(value)}`;
+                }
               }
             }
           }
@@ -129,23 +148,30 @@ export default function PriceChart() {
         scales: {
           x: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
+              color: 'rgba(203, 213, 225, 0.1)' // Subtle grid lines
             },
             ticks: {
-              color: 'hsl(var(--muted-foreground))',
+              color: '#94A3B8', // Slate-400 for better visibility
               maxRotation: 0,
               autoSkip: true,
-              maxTicksLimit: 8
+              maxTicksLimit: 8,
+              font: {
+                size: 11
+              }
             }
           },
           y: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
+              color: 'rgba(203, 213, 225, 0.1)' // Subtle grid lines
             },
             ticks: {
-              color: 'hsl(var(--muted-foreground))',
+              color: '#94A3B8', // Slate-400 for better visibility
               callback: function(value) {
                 return formatCurrency(value as number);
+              },
+              font: {
+                size: 11,
+                family: 'Roboto Mono'
               }
             }
           }
@@ -155,7 +181,7 @@ export default function PriceChart() {
           intersect: false
         },
         animation: {
-          duration: 1000
+          duration: 800
         }
       }
     });
@@ -183,33 +209,33 @@ export default function PriceChart() {
   };
 
   return (
-    <>
+    <div className="rounded border border-border bg-card shadow-sm p-4">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Nifty 50 Price Chart</h3>
         <div className="flex space-x-2">
           <Button 
-            variant={timeframe === '1D' ? 'default' : 'secondary'} 
+            variant={timeframe === '1D' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => handleTimeframeChange('1D')}
           >
             1D
           </Button>
           <Button 
-            variant={timeframe === '1W' ? 'default' : 'secondary'} 
+            variant={timeframe === '1W' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => handleTimeframeChange('1W')}
           >
             1W
           </Button>
           <Button 
-            variant={timeframe === '1M' ? 'default' : 'secondary'} 
+            variant={timeframe === '1M' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => handleTimeframeChange('1M')}
           >
             1M
           </Button>
           <Button 
-            variant={timeframe === 'YTD' ? 'default' : 'secondary'} 
+            variant={timeframe === 'YTD' ? 'default' : 'outline'} 
             size="sm"
             onClick={() => handleTimeframeChange('YTD')}
           >
@@ -218,29 +244,29 @@ export default function PriceChart() {
         </div>
       </div>
       
-      <div className="chart-container">
+      <div className="chart-container" style={{ height: '350px' }}>
         <canvas ref={chartRef}></canvas>
       </div>
       
-      <div className="flex justify-between mt-4">
-        <div className="flex space-x-4">
+      <div className="flex justify-between mt-5 pt-2 border-t border-border">
+        <div className="flex space-x-6">
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
-            <span className="text-sm">Price</span>
+            <div className="w-3 h-3 bg-indigo-600 rounded-full mr-2"></div>
+            <span className="text-sm font-medium">Price</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-secondary rounded-full mr-2"></div>
-            <span className="text-sm">Buy Points</span>
+            <div className="w-3 h-3 bg-green-600 rounded-full mr-2"></div>
+            <span className="text-sm font-medium">Buy Points</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-destructive rounded-full mr-2"></div>
-            <span className="text-sm">Sell Points</span>
+            <div className="w-3 h-3 bg-red-600 rounded-full mr-2"></div>
+            <span className="text-sm font-medium">Sell Points</span>
           </div>
         </div>
         <div>
           <Select value={chartType} onValueChange={handleChartTypeChange}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Type" />
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Chart Type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="line">Line</SelectItem>
@@ -250,6 +276,6 @@ export default function PriceChart() {
           </Select>
         </div>
       </div>
-    </>
+    </div>
   );
 }
