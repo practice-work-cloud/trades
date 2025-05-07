@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 142 69% 58%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --chart-1: 207 90% 54%;
+  --chart-2: 142 69% 58%;
+  --chart-3: 0 84.2% 60.2%;
+  --chart-4: 275 80% 60%;
+  --chart-5: 45 93% 55%;
+  --sidebar-background: 240 10% 3.9%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 207 90% 54%;
+  --sidebar-primary-foreground: 211 100% 99%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Roboto', sans-serif;
+  }
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+}
+
+.grid-cell {
+  @apply bg-card rounded-lg overflow-hidden;
+}
+
+.buy-indicator {
+  @apply bg-secondary bg-opacity-20 border-l-2 border-secondary;
+}
+
+.sell-indicator {
+  @apply bg-destructive bg-opacity-20 border-l-2 border-destructive;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, hsl(var(--card)) 25%, hsl(var(--muted)) 50%, hsl(var(--card)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
