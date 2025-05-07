@@ -3,6 +3,7 @@ import { useMarketData } from '@/hooks/useMarketData';
 import { MarketData, PricePoint } from '@/types/market';
 import { Order, TradingRule } from '@/types/order';
 
+// Define the context type
 interface MarketContextType {
   marketData: MarketData | null;
   priceHistory: PricePoint[];
@@ -19,9 +20,12 @@ interface MarketContextType {
   resetSimulation: () => void;
 }
 
+// Create the context with a default undefined value
 const MarketContext = createContext<MarketContextType | undefined>(undefined);
 
-export function MarketProvider({ children }: { children: ReactNode }) {
+// Provider component - exported as a named export
+export const MarketProvider = ({ children }: { children: ReactNode }) => {
+  // Use the market data hook to get all the state and functions
   const marketData = useMarketData();
   
   return (
@@ -29,9 +33,10 @@ export function MarketProvider({ children }: { children: ReactNode }) {
       {children}
     </MarketContext.Provider>
   );
-}
+};
 
-export function useMarketContext() {
+// Context hook - exported as a named export 
+export const useMarketContext = () => {
   const context = useContext(MarketContext);
   
   if (context === undefined) {
@@ -39,4 +44,4 @@ export function useMarketContext() {
   }
   
   return context;
-}
+};

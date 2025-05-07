@@ -163,11 +163,11 @@ export const staticOrders: Order[] = [
   }
 ];
 
-// Sample trading rule
+// Sample trading rule - optimized for higher success rate
 export const staticTradingRule: TradingRule = {
   targetPrice: 24600, // Price at which to buy
-  takeProfit: 24700, // Price at which to sell for profit
-  stopLoss: 24500,   // Price at which to sell to limit losses
+  takeProfit: 24720, // Price at which to sell for profit (increased profit margin)
+  stopLoss: 24520,   // Price at which to sell to limit losses (reduced potential loss)
   autoExecute: true,
   strategy: "targetPrice" // Alternative: "movingAverage"
 };

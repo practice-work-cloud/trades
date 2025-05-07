@@ -374,7 +374,10 @@ export default function OrderHistoryPage() {
             <CardContent>
               <div className="text-3xl font-bold">
                 {completedOrders.length > 0 
-                  ? `${Math.round((profitLoss >= 0 ? completedOrders.length : 0) / completedOrders.length * 100)}%` 
+                  ? `${Math.round(completedOrders.filter(order => 
+                      order.type === OrderType.SELL && 
+                      (order.profit !== null && order.profit > 0)
+                    ).length / completedOrders.filter(order => order.type === OrderType.SELL).length * 100)}%` 
                   : '0%'}
               </div>
               <p className="text-muted-foreground text-sm mt-1">Profitable orders</p>

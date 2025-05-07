@@ -72,43 +72,33 @@ export default function Header({ isConnected }: HeaderProps) {
       <nav className="flex px-6 py-2 border-t border-border overflow-x-auto">
         <ul className="flex space-x-1">
           <li>
-            <Link href="/">
-              <a className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/")}`}>
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Dashboard
-              </a>
+            <Link href="/" className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/")}`}>
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Dashboard
             </Link>
           </li>
           <li>
-            <Link href="/auto-trading">
-              <a className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/auto-trading")}`}>
-                <Activity className="h-4 w-4 mr-2" />
-                Auto Trading
-              </a>
+            <Link href="/auto-trading" className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/auto-trading")}`}>
+              <Activity className="h-4 w-4 mr-2" />
+              Auto Trading
             </Link>
           </li>
           <li>
-            <Link href="/order-history">
-              <a className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/order-history")}`}>
-                <History className="h-4 w-4 mr-2" />
-                Order History
-              </a>
+            <Link href="/order-history" className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/order-history")}`}>
+              <History className="h-4 w-4 mr-2" />
+              Order History
             </Link>
           </li>
           <li>
-            <Link href="/trading-strategies">
-              <a className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/trading-strategies")}`}>
-                <BookOpenCheck className="h-4 w-4 mr-2" />
-                Trading Strategies
-              </a>
+            <Link href="/trading-strategies" className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/trading-strategies")}`}>
+              <BookOpenCheck className="h-4 w-4 mr-2" />
+              Trading Strategies
             </Link>
           </li>
           <li>
-            <Link href="/settings">
-              <a className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/settings")}`}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </a>
+            <Link href="/settings" className={`flex items-center px-4 py-2 rounded-md text-sm font-medium ${isActive("/settings")}`}>
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
             </Link>
           </li>
         </ul>

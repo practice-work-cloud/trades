@@ -75,10 +75,19 @@ export function useTradeSimulation() {
         const priceDiff = newTarget - currentPrice;
         currentPrice = currentPrice + priceDiff * progress + getRandomNumber(-20, 20);
       } else {
-        // Scenario 4: Move towards stop loss level (bearish trend)
+        // Scenario 4: Instead of always going to stop loss, we have a 70% chance
+        // of going to take profit again for a better success rate
         const progress = (i - 80) / 20;
-        const priceDiff = stopLossPrice - currentPrice;
-        currentPrice = currentPrice + priceDiff * progress + getRandomNumber(-20, 20);
+        
+        if (Math.random() < 0.7) {
+          // 70% chance of going up to take profit (for better success rate)
+          const priceDiff = takeProfitPrice - currentPrice;
+          currentPrice = currentPrice + priceDiff * progress + getRandomNumber(-20, 20);
+        } else {
+          // 30% chance of going down to stop loss
+          const priceDiff = stopLossPrice - currentPrice;
+          currentPrice = currentPrice + priceDiff * progress + getRandomNumber(-20, 20);
+        }
       }
       
       const timestamp = new Date(now.getTime() + i * timeStep);
@@ -301,6 +310,7 @@ export function useTradeSimulation() {
     isSimulationRunning,
     generatePriceData,
     autoSimulate,
-    stopSimulation
+    stopSimulation,
+    stopSimulationRef // Expose the ref for external access
   };
 }

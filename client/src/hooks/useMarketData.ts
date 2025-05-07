@@ -22,7 +22,9 @@ export function useMarketData() {
   // For pure static version, we simulate connection state
   const [isConnected] = useState(true);
   
-  const { isSimulationRunning, autoSimulate, stopSimulation: stopTradeSimulation } = useTradeSimulation();
+  const tradeSimulationRef = useRef<ReturnType<typeof useTradeSimulation> | null>(null);
+  const { isSimulationRunning, autoSimulate, stopSimulation: stopTradeSimulation } = 
+    tradeSimulationRef.current = useTradeSimulation();
   
   // Ref to track if we need to stop data updates during simulation
   const simulationRunningRef = useRef(false);
@@ -132,7 +134,11 @@ export function useMarketData() {
     if (!isSimulationRunning) return;
     
     // Stop the simulation in the trade simulation hook
-    stopTradeSimulation();
+    if (tradeSimulationRef.current && tradeSimulationRef.current.stopSimulation) {
+      tradeSimulationRef.current.stopSimulation();
+    } else {
+      stopTradeSimulation();
+    }
     
     // Reset the flag
     simulationRunningRef.current = false;
@@ -142,6 +148,7 @@ export function useMarketData() {
   const resetSimulation = useCallback(() => {
     // If a simulation is running, stop it first
     if (isSimulationRunning) {
+      // Always use the local stopTradeSimulation to be safe
       stopTradeSimulation();
     }
     
